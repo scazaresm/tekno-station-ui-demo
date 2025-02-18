@@ -1,23 +1,31 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import { signalRService } from "./signalrService";
 
 function App() {
+  const [tag, setTag] = useState(null);
+
+  useEffect(() => {
+      signalRService.startConnection();
+
+      signalRService.listenForTagValueChanged((receivedTag) => {
+          console.log("🔄 Tag Value Changed:", receivedTag);
+          setTag(receivedTag);
+      });
+
+      return () => {
+          signalRService.stopListening(); // Cleanup on unmount
+      };
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div style={{ textAlign: "center", padding: "20px" }}>
+      <h1>🔌 Tekno MES UI Demo</h1>
+      <h2>Below PLC tag value is monitored in real-time through a SignalR hub:</h2>
+      {tag ? (
+          <h1><strong>{tag.name}:</strong> {tag.value}</h1>
+      ) : (
+          <p>Waiting for tag updates...</p>
+      )}
     </div>
   );
 }
